@@ -16,7 +16,7 @@ namespace CustomFileOpenerAndSaver.Models
         [JsonPropertyName("extension")]
         public string Extension { get; set; }
         [JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string Content { get; set; } // Base64
 
         [JsonPropertyName("error")]
         public Error Error { get; set; }
