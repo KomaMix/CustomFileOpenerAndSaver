@@ -1,37 +1,60 @@
-﻿using System.Diagnostics;
+﻿using CustomFileOpenerAndSaver.Models;
+using CustomFileOpenerAndSaver.Services;
+using System.Diagnostics;
+using System.Text;
 
 namespace CustomFileOpenerAndSaver
 {
     public partial class MainPage : ContentPage
     {
-        private string fileExtension = ".tdbkp"; // Указываем нужное расширение для двоичных файлов
+        private readonly FileProcessingService _fileProcessingService = new FileProcessingService(); // Инициализируем сервис
 
         public MainPage()
         {
             InitializeComponent();
         }
 
-        // Обработка нажатия на кнопку "Добавить двоичный файл"
-        private async void OnAddBinaryFileClicked(object sender, EventArgs e)
+        // Обработка нажатия на кнопку "Сохранить файл"
+        private async void OnSaveFileClicked(object sender, EventArgs e)
         {
+            // Получаем данные из полей ввода
+            string fileName = fileNameEntry.Text;
+            string fileContent = fileContentEditor.Text;
+
+            if (string.IsNullOrWhiteSpace(fileContent))
+            {
+                await DisplayAlert("Ошибка", "Содержимое файла не может быть пустым", "OK");
+                return;
+            }
+
             try
             {
-                // Сохранение файла во внутреннюю память
-                string appDirectory = FileSystem.Current.AppDataDirectory;
-                string fileName = $"binaryfile{Guid.NewGuid()}{fileExtension}";
-                string filePath = Path.Combine(appDirectory, fileName);
+                // Преобразуем содержимое файла в Base64
+                string base64Content = Convert.ToBase64String(Encoding.UTF8.GetBytes(fileContent));
 
-                // Генерация двоичных данных
-                byte[] binaryData = new byte[] { 0x1, 0x2, 0x3, 0x4, 0x5 };
+                // Создаем объект TransferFile
+                TransferFile fileToSave = new TransferFile
+                {
+                    Name = fileName, // Если имя пустое, то будет сгенерировано в сервисе
+                    Content = base64Content,
+                    Extension = ".tdbkp" // Фиксированное расширение
+                };
 
-                // Запись данных в файл
-                await File.WriteAllBytesAsync(filePath, binaryData);
+                // Сохраняем файл через сервис
+                TransferFile savedFile = await _fileProcessingService.SaveFile(fileToSave);
 
-                await DisplayAlert("Файл сохранен", $"Файл {fileName} успешно сохранен.", "OK");
+                if (savedFile.Error == null)
+                {
+                    await DisplayAlert("Файл сохранен", $"Файл {savedFile.Name} успешно сохранен.", "OK");
+                }
+                else
+                {
+                    await DisplayAlert("Ошибка", $"Не удалось сохранить файл: {savedFile.Error.Message}", "OK");
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при сохранении двоичного файла: {ex.Message}");
+                await DisplayAlert("Ошибка", $"Ошибка при сохранении файла: {ex.Message}", "OK");
             }
         }
 
@@ -40,14 +63,14 @@ namespace CustomFileOpenerAndSaver
         {
             try
             {
-                string appDirectory = FileSystem.Current.AppDataDirectory;
+                TransferFile searchCriteria = new TransferFile { Extension = ".tdbkp" };
 
-                // Получаем список всех двоичных файлов с заданным расширением
-                var files = Directory.GetFiles(appDirectory, $"*{fileExtension}");
+                // Получаем список файлов с помощью сервиса
+                string[] files = await _fileProcessingService.GetFiles(searchCriteria);
 
                 if (files.Length == 0)
                 {
-                    await DisplayAlert("Файлы не найдены", $"Файлы с расширением {fileExtension} не найдены.", "OK");
+                    await DisplayAlert("Файлы не найдены", $"Файлы с расширением {searchCriteria.Extension} не найдены.", "OK");
                     return;
                 }
 
@@ -56,7 +79,7 @@ namespace CustomFileOpenerAndSaver
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при выборе двоичного файла: {ex.Message}");
+                await DisplayAlert("Ошибка", $"Ошибка при выборе файлов: {ex.Message}", "OK");
             }
         }
 
@@ -72,18 +95,26 @@ namespace CustomFileOpenerAndSaver
 
             try
             {
-                // Чтение содержимого двоичного файла
-                byte[] fileContent = await File.ReadAllBytesAsync(filePath);
+                // Открываем файл через сервис
+                TransferFile fileToOpen = new TransferFile { Path = filePath };
+                TransferFile openedFile = await _fileProcessingService.OpenFile(fileToOpen);
 
-                // Преобразуем двоичные данные в строку для примера (например, в шестнадцатеричный вид)
-                string contentPreview = BitConverter.ToString(fileContent);
+                if (openedFile.Error == null)
+                {
+                    // Преобразуем содержимое обратно из Base64
+                    string fileContent = Encoding.UTF8.GetString(Convert.FromBase64String(openedFile.Content));
 
-                // Вывод всплывающего окна с названием файла и содержимым (в шестнадцатеричном виде)
-                await DisplayAlert("Файл открыт", $"Вы открыли файл: {selectedFileName}\nСодержимое файла:\n{contentPreview}", "OK");
+                    // Вывод всплывающего окна с названием и содержимым файла
+                    await DisplayAlert("Файл открыт", $"Вы открыли файл: {openedFile.Name}\nСодержимое файла:\n{fileContent}", "OK");
+                }
+                else
+                {
+                    await DisplayAlert("Ошибка", $"Не удалось открыть файл: {openedFile.Error.Message}", "OK");
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при открытии двоичного файла: {ex.Message}");
+                await DisplayAlert("Ошибка", $"Ошибка при открытии файла: {ex.Message}", "OK");
             }
 
             // Снимаем выделение с элемента списка

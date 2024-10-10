@@ -4,8 +4,16 @@
              x:Class="CustomFileOpenerAndSaver.MainPage">
 
     <VerticalStackLayout Padding="30">
-        <!-- Кнопка для добавления двоичного файла -->
-        <Button Text="Добавить двоичный файл" Clicked="OnAddBinaryFileClicked"/>
+        <!-- Поле для ввода названия файла -->
+        <Label Text="Введите название файла:" />
+        <Entry x:Name="fileNameEntry" Placeholder="Название файла" />
+
+        <!-- Поле для ввода содержимого файла -->
+        <Label Text="Введите содержимое файла:" />
+        <Editor x:Name="fileContentEditor" Placeholder="Содержимое файла" HeightRequest="100"/>
+
+        <!-- Кнопка для сохранения файла -->
+        <Button Text="Сохранить файл" Clicked="OnSaveFileClicked" />
 
         <!-- Кнопка для выбора двоичного файла -->
         <Button Text="Выбрать двоичный файл" Clicked="OnSelectBinaryFileClicked"/>
