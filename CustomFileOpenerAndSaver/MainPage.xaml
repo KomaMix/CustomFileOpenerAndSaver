@@ -3,23 +3,40 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CustomFileOpenerAndSaver.MainPage">
 
-    <VerticalStackLayout Padding="30">
-        <!-- Поле для ввода названия файла -->
-        <Label Text="Введите название файла:" />
-        <Entry x:Name="fileNameEntry" Placeholder="Название файла" />
+    <VerticalStackLayout Padding="10">
+        <!-- Поля для ввода имени файла и расширения -->
+        <Entry x:Name="FileNameEntry" Placeholder="Введите имя файла" />
+        <Entry x:Name="FileExtensionEntry" Placeholder="Введите расширение файла (.txt, .tdbkp)" />
 
         <!-- Поле для ввода содержимого файла -->
-        <Label Text="Введите содержимое файла:" />
-        <Editor x:Name="fileContentEditor" Placeholder="Содержимое файла" HeightRequest="100"/>
+        <Editor x:Name="FileContentEditor" Placeholder="Введите содержимое файла" AutoSize="TextChanges" HeightRequest="100"/>
 
-        <!-- Кнопка для сохранения файла -->
-        <Button Text="Сохранить файл" Clicked="OnSaveFileClicked" />
+        <!-- Кнопка для создания файла -->
+        <Button Text="Создать файл" Clicked="OnCreateFileClicked"/>
 
-        <!-- Кнопка для выбора двоичного файла -->
-        <Button Text="Выбрать двоичный файл" Clicked="OnSelectBinaryFileClicked"/>
+        <!-- Кнопка для получения списка файлов -->
+        <Button Text="Список файлов" Clicked="OnGetAllFilesClicked"/>
 
-        <!-- Список для отображения файлов -->
-        <ListView x:Name="fileListView" Margin="20" ItemSelected="OnFileSelected" />
+        <!-- ListView для отображения файлов -->
+        <ListView x:Name="FilesListView" ItemSelected="OnFileSelected">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Name}" Detail="{Binding Extension}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Кнопка для обновления выбранного файла -->
+        <Button Text="Обновить файл" Clicked="OnOverwriteFileClicked" IsEnabled="False" x:Name="OverwriteFileButton"/>
+
+        <!-- Кнопка для удаления выбранного файла -->
+        <Button Text="Удалить файл" Clicked="OnDeleteFileClicked" IsEnabled="False" x:Name="DeleteFileButton"/>
+
+        <!-- Кнопка для получения содержимого файла -->
+        <Button Text="Получить содержимое файла" Clicked="OnGetFileContentClicked" IsEnabled="False" x:Name="GetFileContentButton"/>
+
+        <!-- Новый элемент для отправки файла -->
+        <Button Text="Поделиться файлом" Clicked="OnShareFileClicked" IsEnabled="False" x:Name="ShareFileButton"/>
     </VerticalStackLayout>
 
 </ContentPage>

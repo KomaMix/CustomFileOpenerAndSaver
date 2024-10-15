@@ -7,118 +7,165 @@ namespace CustomFileOpenerAndSaver
 {
     public partial class MainPage : ContentPage
     {
-        private readonly FileProcessingService _fileProcessingService = new FileProcessingService(); // Инициализируем сервис
+        private InternalStorageManager _storageManager;
+        private TransferFile _selectedFile;
 
         public MainPage()
         {
             InitializeComponent();
+            _storageManager = new InternalStorageManager();
         }
 
-        // Обработка нажатия на кнопку "Сохранить файл"
-        private async void OnSaveFileClicked(object sender, EventArgs e)
+        private async void OnCreateFileClicked(object sender, EventArgs e)
         {
-            // Получаем данные из полей ввода
-            string fileName = fileNameEntry.Text;
-            string fileContent = fileContentEditor.Text;
+            var fileName = FileNameEntry.Text;
+            var fileExtension = FileExtensionEntry.Text;
+            var fileContent = FileContentEditor.Text;
 
-            if (string.IsNullOrWhiteSpace(fileContent))
+            var file = new TransferFile
             {
-                await DisplayAlert("Ошибка", "Содержимое файла не может быть пустым", "OK");
-                return;
+                Name = fileName,
+                Extension = fileExtension,
+                Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent))
+            };
+
+            var result = await _storageManager.CreateFileAsync(file);
+            
+
+            if (result.Error != null)
+            {
+                await DisplayAlert("Ошибка", result.Error.Message, "OK");
+            }
+            else
+            {
+                await DisplayAlert("Успех", "Файл успешно создан", "OK");
+
+                OnGetAllFilesClicked(sender, e);
             }
 
-            try
-            {
-                // Преобразуем содержимое файла в Base64
-                string base64Content = Convert.ToBase64String(Encoding.UTF8.GetBytes(fileContent));
+            UnfocusTextWriter();
+        }
 
-                // Создаем объект TransferFile
-                TransferFile fileToSave = new TransferFile
+        private async void OnGetAllFilesClicked(object sender, EventArgs e)
+        {
+            var files = _storageManager.GetAllFileNames();
+            FilesListView.ItemsSource = files;
+
+            UnfocusTextWriter();
+        }
+
+        private void OnFileSelected(object sender, SelectedItemChangedEventArgs e)
+        {
+            if (e.SelectedItem is TransferFile selectedFile)
+            {
+                _selectedFile = selectedFile;
+                OverwriteFileButton.IsEnabled = true;
+                DeleteFileButton.IsEnabled = true;
+                GetFileContentButton.IsEnabled = true;
+                ShareFileButton.IsEnabled = true;
+            }
+
+            UnfocusTextWriter();
+        }
+
+        private async void OnOverwriteFileClicked(object sender, EventArgs e)
+        {
+            if (_selectedFile != null)
+            {
+                var fileContent = FileContentEditor.Text;
+
+                var updatedFile = new TransferFile
                 {
-                    Name = fileName, // Если имя пустое, то будет сгенерировано в сервисе
-                    Content = base64Content,
-                    Extension = ".tdbkp" // Фиксированное расширение
+                    Name = _selectedFile.Name,
+                    Extension = _selectedFile.Extension,
+                    Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent))
                 };
 
-                // Сохраняем файл через сервис
-                TransferFile savedFile = await _fileProcessingService.SaveFile(fileToSave);
+                var result = await _storageManager.OverwriteFileAsync(updatedFile);
 
-                if (savedFile.Error == null)
+                if (result.Error != null)
                 {
-                    await DisplayAlert("Файл сохранен", $"Файл {savedFile.Name} успешно сохранен.", "OK");
+                    await DisplayAlert("Ошибка", result.Error.Message, "OK");
                 }
                 else
                 {
-                    await DisplayAlert("Ошибка", $"Не удалось сохранить файл: {savedFile.Error.Message}", "OK");
+                    await DisplayAlert("Успех", "Файл успешно обновлен", "OK");
                 }
             }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Ошибка", $"Ошибка при сохранении файла: {ex.Message}", "OK");
-            }
+
+            UnfocusTextWriter();
         }
 
-        // Обработка нажатия на кнопку "Выбрать двоичный файл"
-        private async void OnSelectBinaryFileClicked(object sender, EventArgs e)
+        private async void OnDeleteFileClicked(object sender, EventArgs e)
         {
-            try
+            if (_selectedFile != null)
             {
-                TransferFile searchCriteria = new TransferFile { Extension = ".tdbkp" };
+                var result = _storageManager.DeleteFile(_selectedFile);
 
-                // Получаем список файлов с помощью сервиса
-                string[] files = await _fileProcessingService.GetFiles(searchCriteria);
-
-                if (files.Length == 0)
+                if (result.Error != null)
                 {
-                    await DisplayAlert("Файлы не найдены", $"Файлы с расширением {searchCriteria.Extension} не найдены.", "OK");
-                    return;
-                }
-
-                // Обновляем ListView для отображения списка файлов
-                fileListView.ItemsSource = files.Select(f => Path.GetFileName(f)).ToList();
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Ошибка", $"Ошибка при выборе файлов: {ex.Message}", "OK");
-            }
-        }
-
-        // Обработка выбора файла из списка
-        private async void OnFileSelected(object sender, SelectedItemChangedEventArgs e)
-        {
-            if (e.SelectedItem == null)
-                return;
-
-            string selectedFileName = e.SelectedItem.ToString();
-            string appDirectory = FileSystem.Current.AppDataDirectory;
-            string filePath = Path.Combine(appDirectory, selectedFileName);
-
-            try
-            {
-                // Открываем файл через сервис
-                TransferFile fileToOpen = new TransferFile { Path = filePath };
-                TransferFile openedFile = await _fileProcessingService.OpenFile(fileToOpen);
-
-                if (openedFile.Error == null)
-                {
-                    // Преобразуем содержимое обратно из Base64
-                    string fileContent = Encoding.UTF8.GetString(Convert.FromBase64String(openedFile.Content));
-
-                    // Вывод всплывающего окна с названием и содержимым файла
-                    await DisplayAlert("Файл открыт", $"Вы открыли файл: {openedFile.Name}\nСодержимое файла:\n{fileContent}", "OK");
+                    await DisplayAlert("Ошибка", result.Error.Message, "OK");
                 }
                 else
                 {
-                    await DisplayAlert("Ошибка", $"Не удалось открыть файл: {openedFile.Error.Message}", "OK");
+                    await DisplayAlert("Успех", "Файл успешно удален", "OK");
+
+                    OnGetAllFilesClicked(sender, e);
                 }
             }
-            catch (Exception ex)
+
+            UnfocusTextWriter();
+        }
+
+        private async void OnGetFileContentClicked(object sender, EventArgs e)
+        {
+            if (_selectedFile != null)
             {
-                await DisplayAlert("Ошибка", $"Ошибка при открытии файла: {ex.Message}", "OK");
+                var result = await _storageManager.GetFileContentAsync(_selectedFile);
+
+                if (result.Error != null)
+                {
+                    await DisplayAlert("Ошибка", result.Error.Message, "OK");
+                }
+                else
+                {
+                    var content = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(result.Content));
+                    FileContentEditor.Text = content;
+                    await DisplayAlert("Содержимое файла", content, "OK");
+                }
             }
 
-            // Снимаем выделение с элемента списка
-            ((ListView)sender).SelectedItem = null;
+            UnfocusTextWriter();
+        }
+
+        private async void OnShareFileClicked(object sender, EventArgs e)
+        {
+            // Логика для отправки файла через Share API
+            if (_selectedFile != null)
+            {
+                var fullPath = Path.Combine(FileSystem.AppDataDirectory, _selectedFile.Name + _selectedFile.Extension);
+
+                if (File.Exists(fullPath))
+                {
+                    await Share.RequestAsync(new ShareFileRequest
+                    {
+                        Title = "Отправить файл",
+                        File = new ShareFile(fullPath)
+                    });
+                }
+                else
+                {
+                    await DisplayAlert("Ошибка", "Файл не найден", "OK");
+                }
+            }
+        }
+
+
+        private void UnfocusTextWriter()
+        {
+            FileNameEntry.Unfocus();
+            FileExtensionEntry.Unfocus();
+            FileContentEditor.Unfocus();
         }
     }
 
