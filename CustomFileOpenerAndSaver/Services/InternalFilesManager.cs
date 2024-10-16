@@ -14,10 +14,22 @@ namespace CustomFileOpenerAndSaver.Services
 
         public InternalFilesManager()
         {
-            // Внутренняя директория приложения
-            _storagePath = FileSystem.AppDataDirectory;
-        }
+#if ANDROID
+            // Получаем путь к публичной директории Downloads
+            var externalRoot = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments)?.AbsolutePath;
 
+            // Создаем путь к папке Ridan внутри папки Downloads
+            var _externalStoragePath = Path.Combine(externalRoot, "Ridan");
+
+            // Проверяем, существует ли папка Ridan, если нет — создаем
+            if (!Directory.Exists(_externalStoragePath))
+            {
+                Directory.CreateDirectory(_externalStoragePath);
+            }
+
+            _storagePath = _externalStoragePath;
+#endif
+        }
 
         public async Task<TransferFile> CreateFileAsync(TransferFile file)
         {
@@ -50,7 +62,8 @@ namespace CustomFileOpenerAndSaver.Services
                 file.Path = fullPath;
 
                 return file;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 file.Error = new Error
                 {
@@ -84,9 +97,9 @@ namespace CustomFileOpenerAndSaver.Services
                 file.Content = Convert.ToBase64String(contentBytes);
                 file.Path = fullPath;
 
-
                 return file;
-            } catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 file.Error = new Error
                 {
@@ -150,7 +163,6 @@ namespace CustomFileOpenerAndSaver.Services
                 };
                 return file;
             }
-
         }
 
         public TransferFile DeleteFile(TransferFile file)
@@ -189,8 +201,6 @@ namespace CustomFileOpenerAndSaver.Services
             return File.Exists(fullPath);
         }
 
-
-
         private async Task WriteFileAsync(string fullPath, string contentBase64)
         {
             var contentBytes = Convert.FromBase64String(contentBase64);
@@ -208,4 +218,5 @@ namespace CustomFileOpenerAndSaver.Services
             return await File.ReadAllBytesAsync(fullPath);
         }
     }
+
 }
