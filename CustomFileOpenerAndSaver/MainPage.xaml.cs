@@ -75,6 +75,7 @@ namespace CustomFileOpenerAndSaver
                 GetFileContentButton.IsEnabled = true;
                 ShareFileButton.IsEnabled = true;
                 FileSaveButton.IsEnabled = true;
+                ChangeNameButton.IsEnabled = true;
             }
 
             UnfocusTextWriter();
@@ -107,6 +108,63 @@ namespace CustomFileOpenerAndSaver
             }
 
             UnfocusTextWriter();
+        }
+
+        private async void OnChangeNameFileClicked(object sender, EventArgs e)
+        {
+            if (_selectedFile != null)
+            {
+                var fileName = FileNameEntry.Text;
+                var fileExtension = FileExtensionEntry.Text;
+
+                if (fileName == null || fileExtension == null)
+                {
+                    await DisplayAlert("Ошибка", "Введите название и расширение файла", "OK");
+                    return;
+                }
+
+                // Проверяем, доступно ли сохранение по этому названию и расширению
+                if (!_fileManager.FileExists(fileName, fileExtension))
+                {
+
+                    // Достаем файл из внутреннего хранилища
+                    var internalFileWithContent = await _fileManager.GetFileContentAsync(_selectedFile);
+
+
+                    // Создаем новый файл
+                    var resultCreate = await _fileManager.CreateFileAsync(new TransferFile
+                    {
+                        Name = fileName,
+                        Extension = fileExtension,
+                        Content = internalFileWithContent.Content
+                    });
+
+
+                    // Удаляем старый файла, если смогли создать новый
+                    TransferFile resultDelete = new TransferFile();
+                    if (resultCreate.Error == null)
+                    {
+                        // Удаляем старый файл
+                        resultDelete = _fileManager.DeleteFile(internalFileWithContent);
+                    }
+                    
+                    // Вывод успешности операции
+                    if (resultCreate.Error == null &&
+                        resultDelete != null && resultDelete.Error == null)
+                    {
+                        await DisplayAlert("Успех", "Переименование прошло хорошо", "OK");
+                    } else
+                    {
+                        await DisplayAlert("Ошибка", "Не удалось переименовать файл", "OK");
+                    }
+
+                } else
+                {
+                    await DisplayAlert("Ошибка", "Файл с таким названием уже есть в дата", "OK");
+                }
+            }
+
+            OnGetAllFilesClicked(sender, e);
         }
 
         // Удаление файла из внутренней памяти
@@ -183,7 +241,7 @@ namespace CustomFileOpenerAndSaver
 
 
         // Сохранения файла из внутренней памяти во внешнюю память
-        private async void SaveFileClicked(object sender, EventArgs e)
+        private async void OnSaveFileClicked(object sender, EventArgs e)
         {
             try
             {
@@ -216,7 +274,7 @@ namespace CustomFileOpenerAndSaver
 
 
         // Открытие файла из внешнего хранилища
-        private async void FileOpenButtonExternalStorage(object sender, EventArgs e)
+        private async void OnFileOpenButtonExternalStorage(object sender, EventArgs e)
         {
             try
             {

@@ -28,6 +28,9 @@
 
         <!-- Кнопка для обновления выбранного файла -->
         <Button Text="Обновить файл" Clicked="OnOverwriteFileClicked" IsEnabled="False" x:Name="OverwriteFileButton"/>
+        
+        <!-- Кнопка для обновления названия-->
+        <Button Text="Обновить названия файла" Clicked="OnChangeNameFileClicked" IsEnabled="False" x:Name="ChangeNameButton" />
 
         <!-- Кнопка для удаления выбранного файла -->
         <Button Text="Удалить файл" Clicked="OnDeleteFileClicked" IsEnabled="False" x:Name="DeleteFileButton"/>
@@ -39,10 +42,10 @@
         <Button Text="Поделиться файлом" Clicked="OnShareFileClicked" IsEnabled="False" x:Name="ShareFileButton"/>
         
         <!-- Кнопка для сохранения файла во внешнюю память-->
-        <Button Text="Сохранить файл во внешнюю память" Clicked="SaveFileClicked" IsEnabled="False" x:Name="FileSaveButton" />
+        <Button Text="Сохранить файл во внешнюю память" Clicked="OnSaveFileClicked" IsEnabled="False" x:Name="FileSaveButton" />
         
         <!-- Кнопка для открытия файла из внешней памяти-->
-        <Button Text="Открытие файла из внешней памяти" Clicked="FileOpenButtonExternalStorage" x:Name="FileOpenButton" />
+        <Button Text="Открытие файла из внешней памяти" Clicked="OnFileOpenButtonExternalStorage" x:Name="FileOpenButton" />
     </VerticalStackLayout>
 
 </ContentPage>
