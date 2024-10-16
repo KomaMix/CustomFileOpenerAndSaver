@@ -11,10 +11,10 @@
         <!-- Поле для ввода содержимого файла -->
         <Editor x:Name="FileContentEditor" Placeholder="Введите содержимое файла" AutoSize="TextChanges" HeightRequest="100"/>
 
-        <!-- Кнопка для создания файла -->
+        <!-- Кнопка для создания файла во внутренней памяти -->
         <Button Text="Создать файл" Clicked="OnCreateFileClicked"/>
 
-        <!-- Кнопка для получения списка файлов -->
+        <!-- Кнопка для получения списка файлов из внутренней памяти -->
         <Button Text="Список файлов" Clicked="OnGetAllFilesClicked"/>
 
         <!-- ListView для отображения файлов -->
