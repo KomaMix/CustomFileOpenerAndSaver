@@ -1,4 +1,5 @@
-﻿using CustomFileOpenerAndSaver.Models;
+﻿using CommunityToolkit.Maui.Storage;
+using CustomFileOpenerAndSaver.Models;
 using CustomFileOpenerAndSaver.Services;
 using System.Diagnostics;
 using System.Text;
@@ -63,6 +64,7 @@ namespace CustomFileOpenerAndSaver
                 DeleteFileButton.IsEnabled = true;
                 GetFileContentButton.IsEnabled = true;
                 ShareFileButton.IsEnabled = true;
+                FileSaveButton.IsEnabled = true;
             }
 
             UnfocusTextWriter();
@@ -143,20 +145,71 @@ namespace CustomFileOpenerAndSaver
             // Логика для отправки файла через Share API
             if (_selectedFile != null)
             {
-                var fullPath = Path.Combine(FileSystem.AppDataDirectory, _selectedFile.Name + _selectedFile.Extension);
+                try
+                {
+                    if (_storageManager.FileExists(_selectedFile.Name, _selectedFile.Extension)) {
+                        var fullPath = Path.Combine(FileSystem.AppDataDirectory, _selectedFile.Name + _selectedFile.Extension);
 
-                if (File.Exists(fullPath))
-                {
-                    await Share.RequestAsync(new ShareFileRequest
+                        await Share.RequestAsync(new ShareFileRequest
+                        {
+                            Title = "Отправить файл",
+                            File = new ShareFile(fullPath)
+                        });
+                    } else
                     {
-                        Title = "Отправить файл",
-                        File = new ShareFile(fullPath)
-                    });
-                }
-                else
+                        await DisplayAlert("Ошибка", "Файл не найден", "OK");
+                    }
+                } catch (Exception ex)
                 {
-                    await DisplayAlert("Ошибка", "Файл не найден", "OK");
+                    throw;
                 }
+                
+
+                //var fullPath = Path.Combine(FileSystem.AppDataDirectory, _selectedFile.Name + _selectedFile.Extension);
+
+                //if (File.Exists(fullPath))
+                //{
+                //    await Share.RequestAsync(new ShareFileRequest
+                //    {
+                //        Title = "Отправить файл",
+                //        File = new ShareFile(fullPath)
+                //    });
+                //}
+                //else
+                //{
+                //    await DisplayAlert("Ошибка", "Файл не найден", "OK");
+                //}
+            }
+        }
+
+        private async void SaveFileClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_selectedFile != null)
+                {
+                    var resultFile = await _storageManager.GetFileContentAsync(_selectedFile);
+
+                    var bytes = Convert.FromBase64String(resultFile.Content);
+
+                    using (var stream = new MemoryStream(bytes))
+                    {
+                        var saveResult = await FileSaver.SaveAsync(
+                            $"{_selectedFile.Name}{_selectedFile.Extension}",
+                            stream,
+                            default
+                        );
+
+                        if (saveResult.IsSuccessful)
+                        {
+                            await DisplayAlert("", "Файл сохранен", "OK");
+                        }
+                    }
+
+                }
+            } catch
+            {
+
             }
         }
 

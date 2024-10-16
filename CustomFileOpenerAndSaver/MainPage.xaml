@@ -37,6 +37,9 @@
 
         <!-- Новый элемент для отправки файла -->
         <Button Text="Поделиться файлом" Clicked="OnShareFileClicked" IsEnabled="False" x:Name="ShareFileButton"/>
+        
+        <!-- Кнопка для сохранения файла во внешнюю память-->
+        <Button Text="Сохранить файл во внешнюю память" Clicked="SaveFileClicked" IsEnabled="False" x:Name="FileSaveButton" />
     </VerticalStackLayout>
 
 </ContentPage>
