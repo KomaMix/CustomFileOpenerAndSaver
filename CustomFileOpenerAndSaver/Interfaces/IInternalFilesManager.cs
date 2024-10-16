@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace CustomFileOpenerAndSaver.Interfaces
 {
-    // Переимновать Storage
     internal interface IInternalFilesManager
     {
         public Task<TransferFile> CreateFileAsync(TransferFile file);
