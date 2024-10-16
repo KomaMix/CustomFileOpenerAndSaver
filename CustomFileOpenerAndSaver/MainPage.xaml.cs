@@ -209,7 +209,29 @@ namespace CustomFileOpenerAndSaver
                 }
             } catch
             {
+                throw;
+            }
+        }
 
+        private async void FileOpenButtonExternalStorage(object sender, EventArgs e)
+        {
+            try
+            {
+                var filePickResult = await FilePicker.PickAsync();
+
+                if (filePickResult != null)
+                {
+
+                    await DisplayAlert("", "Файл успешно открыт", "OK");
+                    
+                } else
+                {
+                    await DisplayAlert("", "Не удалось открыть файл", "OK");
+                }
+
+            } catch
+            {
+                throw;
             }
         }
 

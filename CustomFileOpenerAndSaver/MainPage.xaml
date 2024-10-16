@@ -40,6 +40,9 @@
         
         <!-- Кнопка для сохранения файла во внешнюю память-->
         <Button Text="Сохранить файл во внешнюю память" Clicked="SaveFileClicked" IsEnabled="False" x:Name="FileSaveButton" />
+        
+        <!-- Кнопка для открытия файла из внешней памяти-->
+        <Button Text="Открытие файла из внешней памяти" Clicked="FileOpenButtonExternalStorage" x:Name="FileOpenButton" />
     </VerticalStackLayout>
 
 </ContentPage>
