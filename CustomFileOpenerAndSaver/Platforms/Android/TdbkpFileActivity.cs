@@ -8,7 +8,7 @@ using Android.Content;
 namespace CustomFileOpenerAndSaver.Platforms.Android
 {
     //[Activity(Theme = "@style/Maui.SplashTheme", LaunchMode = LaunchMode.Multiple, Exported = true)]
-    [Activity(Theme = "@style/Maui.SplashTheme", LaunchMode = LaunchMode.SingleTask, Exported = true)]
+    [Activity(Theme = "@style/Maui.SplashTheme", LaunchMode = LaunchMode.Multiple, Exported = true)]
     [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
         DataMimeType = "application/octet-stream", DataScheme = "file", DataHost = "*", DataPathPattern = ".*\\.tdbkp")]
     [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },

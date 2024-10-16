@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace CustomFileOpenerAndSaver.Services
 {
-    internal class InternalStorageManager : IInternalStorageManager
+    internal class InternalFilesManager : IInternalFilesManager
     {
         private readonly string _storagePath;
 
-        public InternalStorageManager()
+        public InternalFilesManager()
         {
             // Внутренняя директория приложения
             _storagePath = FileSystem.AppDataDirectory;

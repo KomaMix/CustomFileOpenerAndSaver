@@ -8,13 +8,13 @@ namespace CustomFileOpenerAndSaver
 {
     public partial class MainPage : ContentPage
     {
-        private InternalStorageManager _storageManager;
+        private InternalFilesManager _storageManager;
         private TransferFile _selectedFile;
 
         public MainPage()
         {
             InitializeComponent();
-            _storageManager = new InternalStorageManager();
+            _storageManager = new InternalFilesManager();
         }
 
         private async void OnCreateFileClicked(object sender, EventArgs e)
@@ -163,22 +163,7 @@ namespace CustomFileOpenerAndSaver
                 {
                     throw;
                 }
-                
-
-                //var fullPath = Path.Combine(FileSystem.AppDataDirectory, _selectedFile.Name + _selectedFile.Extension);
-
-                //if (File.Exists(fullPath))
-                //{
-                //    await Share.RequestAsync(new ShareFileRequest
-                //    {
-                //        Title = "Отправить файл",
-                //        File = new ShareFile(fullPath)
-                //    });
-                //}
-                //else
-                //{
-                //    await DisplayAlert("Ошибка", "Файл не найден", "OK");
-                //}
+               
             }
         }
 
