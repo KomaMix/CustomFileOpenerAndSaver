@@ -15,7 +15,7 @@ namespace CustomFileOpenerAndSaver.Services
         public InternalFilesManager()
         {
 #if ANDROID
-            // Получаем путь к публичной директории Downloads
+            // Получаем путь к Documents
             var externalRoot = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments)?.AbsolutePath;
 
             // Создаем путь к папке Ridan внутри папки Downloads

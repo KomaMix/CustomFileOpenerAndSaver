@@ -1,6 +1,13 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using CustomFileOpenerAndSaver.Interfaces;
 using CustomFileOpenerAndSaver.Models;
+
+#if ANDROID
+
+using CustomFileOpenerAndSaver.Platforms.Android;
+
+#endif
+
 using CustomFileOpenerAndSaver.Services;
 using System.Diagnostics;
 using System.Text;
@@ -57,6 +64,10 @@ namespace CustomFileOpenerAndSaver
         // Кнопка получения списка файлов
         private async void OnGetAllFilesClicked(object sender, EventArgs e)
         {
+#if ANDROID
+            CheckPermissionManager.CheckExternalStoragePermission();
+#endif
+
             var files = _fileManager.GetAllFileNames();
             FilesListView.ItemsSource = files;
 
@@ -273,6 +284,9 @@ namespace CustomFileOpenerAndSaver
         }
 
 
+
+
+
         // Открытие файла из внешнего хранилища
         private async void OnFileOpenButtonExternalStorage(object sender, EventArgs e)
         {
@@ -284,17 +298,20 @@ namespace CustomFileOpenerAndSaver
                 {
 
                     await DisplayAlert("", "Файл успешно открыт", "OK");
-                    
+
                 } else
                 {
                     await DisplayAlert("", "Не удалось открыть файл", "OK");
                 }
+
+                //string fileContent = await OpenFileFromMediaStore("Hg.tdbkp", "Ridan");
 
             } catch
             {
                 throw;
             }
         }
+
 
 
         // После ввода текста и выполнения действия сделал грубое скрытие клавиатуры
