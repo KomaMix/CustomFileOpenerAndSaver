@@ -9,6 +9,7 @@ using CustomFileOpenerAndSaver.Platforms.Android;
 #endif
 
 using CustomFileOpenerAndSaver.Services;
+
 using System.Diagnostics;
 using System.Text;
 
@@ -17,7 +18,8 @@ namespace CustomFileOpenerAndSaver
     public partial class MainPage : ContentPage
     {
         // Сервис для работы с внутренней памятью
-        private IInternalFilesManager _fileManager;
+        private IInternalFilesManager _fileManagerStorage;
+        private IFileSaverService _fileSaverService;
 
         // Текущий выбранный файл в списке
         // Пока сделал так. Думаю, в будущем это можно изменить по Blazor
@@ -26,7 +28,10 @@ namespace CustomFileOpenerAndSaver
         public MainPage()
         {
             InitializeComponent();
-            _fileManager = new InternalFilesManager();
+            _fileManagerStorage = new InternalFilesManager();
+#if ANDROID
+            _fileSaverService = new FileSaverService();
+#endif
         }
 
         // Кнопка создания файла
@@ -43,7 +48,7 @@ namespace CustomFileOpenerAndSaver
                 Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent))
             };
 
-            var result = await _fileManager.CreateFileAsync(file);
+            var result = await _fileManagerStorage.CreateFileAsync(file);
             
 
             if (result.Error != null)
@@ -68,7 +73,7 @@ namespace CustomFileOpenerAndSaver
             CheckPermissionManager.CheckExternalStoragePermission();
 #endif
 
-            var files = _fileManager.GetAllFileNames();
+            var files = _fileManagerStorage.GetAllFileNames();
             FilesListView.ItemsSource = files;
 
             UnfocusTextWriter();
@@ -106,7 +111,7 @@ namespace CustomFileOpenerAndSaver
                     Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent))
                 };
 
-                var result = await _fileManager.OverwriteFileAsync(updatedFile);
+                var result = await _fileManagerStorage.OverwriteFileAsync(updatedFile);
 
                 if (result.Error != null)
                 {
@@ -135,15 +140,15 @@ namespace CustomFileOpenerAndSaver
                 }
 
                 // Проверяем, доступно ли сохранение по этому названию и расширению
-                if (!_fileManager.FileExists(fileName, fileExtension))
+                if (!_fileManagerStorage.FileExists(fileName, fileExtension))
                 {
 
                     // Достаем файл из внутреннего хранилища
-                    var internalFileWithContent = await _fileManager.GetFileContentAsync(_selectedFile);
+                    var internalFileWithContent = await _fileManagerStorage.GetFileContentAsync(_selectedFile);
 
 
                     // Создаем новый файл
-                    var resultCreate = await _fileManager.CreateFileAsync(new TransferFile
+                    var resultCreate = await _fileManagerStorage.CreateFileAsync(new TransferFile
                     {
                         Name = fileName,
                         Extension = fileExtension,
@@ -156,7 +161,7 @@ namespace CustomFileOpenerAndSaver
                     if (resultCreate.Error == null)
                     {
                         // Удаляем старый файл
-                        resultDelete = _fileManager.DeleteFile(internalFileWithContent);
+                        resultDelete = _fileManagerStorage.DeleteFile(internalFileWithContent);
                     }
                     
                     // Вывод успешности операции
@@ -183,7 +188,7 @@ namespace CustomFileOpenerAndSaver
         {
             if (_selectedFile != null)
             {
-                var result = _fileManager.DeleteFile(_selectedFile);
+                var result = _fileManagerStorage.DeleteFile(_selectedFile);
 
                 if (result.Error != null)
                 {
@@ -205,7 +210,7 @@ namespace CustomFileOpenerAndSaver
         {
             if (_selectedFile != null)
             {
-                var result = await _fileManager.GetFileContentAsync(_selectedFile);
+                var result = await _fileManagerStorage.GetFileContentAsync(_selectedFile);
 
                 if (result.Error != null)
                 {
@@ -230,7 +235,7 @@ namespace CustomFileOpenerAndSaver
             {
                 try
                 {
-                    if (_fileManager.FileExists(_selectedFile.Name, _selectedFile.Extension)) {
+                    if (_fileManagerStorage.FileExists(_selectedFile.Name, _selectedFile.Extension)) {
                         var fullPath = Path.Combine(FileSystem.AppDataDirectory, _selectedFile.Name + _selectedFile.Extension);
 
                         await Share.RequestAsync(new ShareFileRequest
@@ -258,23 +263,14 @@ namespace CustomFileOpenerAndSaver
             {
                 if (_selectedFile != null)
                 {
-                    var resultFile = await _fileManager.GetFileContentAsync(_selectedFile);
+                    var resultFile = await _fileManagerStorage.GetFileContentAsync(_selectedFile);
 
                     var bytes = Convert.FromBase64String(resultFile.Content);
 
-                    using (var stream = new MemoryStream(bytes))
-                    {
-                        var saveResult = await FileSaver.SaveAsync(
-                            $"{_selectedFile.Name}{_selectedFile.Extension}",
-                            stream,
-                            default
-                        );
+                    // Вызов платформенного сервиса для сохранения файла
+                    await _fileSaverService.SaveFileAsync($"{_selectedFile.Name}{_selectedFile.Extension}", bytes);
 
-                        if (saveResult.IsSuccessful)
-                        {
-                            await DisplayAlert("", "Файл сохранен", "OK");
-                        }
-                    }
+                    await DisplayAlert("", "Файл сохранен", "OK");
 
                 }
             } catch
