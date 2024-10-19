@@ -4,6 +4,7 @@ using CustomFileOpenerAndSaver.Models;
 
 #if ANDROID
 
+using CustomFileOpenerAndSaver.Platforms.Android.Services;
 using CustomFileOpenerAndSaver.Platforms.Android;
 
 #endif
@@ -20,6 +21,7 @@ namespace CustomFileOpenerAndSaver
         // Сервис для работы с внутренней памятью
         private IInternalFilesManager _fileManagerStorage;
         private IFileSaverService _fileSaverService;
+        private IFileOpenerService _fileOpenerService;
 
         // Текущий выбранный файл в списке
         // Пока сделал так. Думаю, в будущем это можно изменить по Blazor
@@ -29,8 +31,13 @@ namespace CustomFileOpenerAndSaver
         {
             InitializeComponent();
             _fileManagerStorage = new InternalFilesManager();
+
+
 #if ANDROID
+            var curActivity = Platform.CurrentActivity;
+
             _fileSaverService = new FileSaverService();
+            _fileOpenerService = new FileOpenerService();
 #endif
         }
 
@@ -69,9 +76,9 @@ namespace CustomFileOpenerAndSaver
         // Кнопка получения списка файлов
         private async void OnGetAllFilesClicked(object sender, EventArgs e)
         {
-#if ANDROID
-            CheckPermissionManager.CheckExternalStoragePermission();
-#endif
+//#if ANDROID
+//            CheckPermissionManager.CheckExternalStoragePermission();
+//#endif
 
             var files = _fileManagerStorage.GetAllFileNames();
             FilesListView.ItemsSource = files;
@@ -288,17 +295,19 @@ namespace CustomFileOpenerAndSaver
         {
             try
             {
-                var filePickResult = await FilePicker.PickAsync();
+                await _fileOpenerService.OpenFile();
 
-                if (filePickResult != null)
-                {
+                //var filePickResult = await FilePicker.PickAsync();
 
-                    await DisplayAlert("", "Файл успешно открыт", "OK");
+                //if (filePickResult != null)
+                //{
 
-                } else
-                {
-                    await DisplayAlert("", "Не удалось открыть файл", "OK");
-                }
+                //    await DisplayAlert("", "Файл успешно открыт", "OK");
+
+                //} else
+                //{
+                //    await DisplayAlert("", "Не удалось открыть файл", "OK");
+                //}
 
                 //string fileContent = await OpenFileFromMediaStore("Hg.tdbkp", "Ridan");
 

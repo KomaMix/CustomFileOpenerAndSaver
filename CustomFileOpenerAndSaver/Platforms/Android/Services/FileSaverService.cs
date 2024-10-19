@@ -7,12 +7,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CustomFileOpenerAndSaver.Platforms.Android
+namespace CustomFileOpenerAndSaver.Platforms.Android.Services
 {
     internal class FileSaverService : IFileSaverService
     {
         private static TaskCompletionSource<bool> saveFileTcs;
+
         private static byte[] fileBytesToSave;
+
+        public Task SaveFileAsync(string fileName, byte[] data)
+        {
+            fileBytesToSave = data;
+            saveFileTcs = new TaskCompletionSource<bool>();
+
+            var intent = new Intent(Intent.ActionCreateDocument);
+            intent.AddCategory(Intent.CategoryOpenable);
+            intent.SetType("application/octet-stream");
+            intent.PutExtra(Intent.ExtraTitle, fileName);
+
+            MainActivity.Instance.StartActivityForResult(intent, 1000);
+
+
+            return saveFileTcs.Task;
+        }
 
         public static void OnSaveFileActivityResult(Result resultCode, Intent data)
         {
@@ -46,21 +63,6 @@ namespace CustomFileOpenerAndSaver.Platforms.Android
             }
         }
 
-        public Task SaveFileAsync(string fileName, byte[] data)
-        {
-            fileBytesToSave = data;
-            saveFileTcs = new TaskCompletionSource<bool>();
-
-            var intent = new Intent(Intent.ActionCreateDocument);
-            intent.AddCategory(Intent.CategoryOpenable);
-            intent.SetType("application/octet-stream");
-            intent.PutExtra(Intent.ExtraTitle, fileName);
-
-            MainActivity.Instance.StartActivityForResult(intent, 1000);
-
-
-            return saveFileTcs.Task;
-        }
     }
 
 }

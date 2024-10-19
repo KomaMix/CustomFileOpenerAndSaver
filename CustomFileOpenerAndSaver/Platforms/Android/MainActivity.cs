@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using CustomFileOpenerAndSaver.Platforms.Android;
+using CustomFileOpenerAndSaver.Platforms.Android.Services;
 
 namespace CustomFileOpenerAndSaver
 {
@@ -23,6 +24,9 @@ namespace CustomFileOpenerAndSaver
             if (requestCode == 1000)
             {
                 FileSaverService.OnSaveFileActivityResult(resultCode, data);
+            } else if (requestCode == 1001)
+            {
+                FileOpenerService.OnOpenFileActivityResult(resultCode, data);
             }
         }
     }
