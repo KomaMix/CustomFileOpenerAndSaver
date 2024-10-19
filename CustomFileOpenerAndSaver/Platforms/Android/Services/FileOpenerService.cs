@@ -1,22 +1,21 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Provider;
 using CustomFileOpenerAndSaver.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CustomFileOpenerAndSaver.Models;
+
 
 namespace CustomFileOpenerAndSaver.Platforms.Android.Services
 {
     internal class FileOpenerService : IFileOpenerService
     {
-        public static TaskCompletionSource<bool> openFileTcs;
+        public static TaskCompletionSource<TransferFile> openFileTcs;
 
 
-        public Task OpenFile()
+        public Task<TransferFile> OpenFile(TransferFile transferFile)
         {
-            openFileTcs = new TaskCompletionSource<bool>();
+            // Инициализация TaskCompletionSource
+            openFileTcs = new TaskCompletionSource<TransferFile>();
 
             var intent = new Intent(Intent.ActionOpenDocument);
             intent.AddCategory(Intent.CategoryOpenable);
@@ -34,7 +33,6 @@ namespace CustomFileOpenerAndSaver.Platforms.Android.Services
                 var uri = data.Data;
                 try
                 {
-                    // Получение контента файла
                     var contentResolver = MainActivity.Instance.ContentResolver;
                     using (var inputStream = contentResolver.OpenInputStream(uri))
                     {
@@ -45,26 +43,77 @@ namespace CustomFileOpenerAndSaver.Platforms.Android.Services
                                 inputStream.CopyTo(memoryStream);
                                 var fileContent = memoryStream.ToArray();
 
-                                // Теперь fileContent содержит содержимое файла
-                                // Вы можете сохранить его или использовать как требуется
-                                // Например, вывести содержимое файла как строку
-                                string fileText = Encoding.UTF8.GetString(fileContent);
-                                Console.WriteLine(fileText);
+                                // Чтение файла и получение информации
+                                var fileName = GetFileName(uri);
+                                var fileExtension = Path.GetExtension(fileName).TrimStart('.');
+
+                                if (fileName.EndsWith(".tdbkp"))
+                                {
+                                    fileName = fileName.Substring(0, fileName.Length - ".tdbkp".Length);
+                                }
+
+                                
+                                var base64Content = Convert.ToBase64String(fileContent);
+
+                                // Заполнение модели TransferFile
+                                var transferFile = new TransferFile
+                                {
+                                    Name = fileName,
+                                    Extension = fileExtension,
+                                    Content = base64Content,
+                                    Path = uri.ToString(), // Путь в формате URI
+                                };
+
+                                openFileTcs?.SetResult(transferFile);
                             }
                         }
                     }
-
-                    openFileTcs?.SetResult(true);
                 }
                 catch (Exception ex)
                 {
-                    openFileTcs.SetException(ex); // Ошибка при сохранении
+                    // В случае ошибки заполняем Error
+                    var errorTransferFile = new TransferFile
+                    {
+                        Error = new Error
+                        {
+                            Code = "FILE_OPEN_ERROR",
+                            Message = ex.Message
+                        }
+                    };
+
+                    openFileTcs?.SetResult(errorTransferFile);
                 }
             }
             else
             {
-                openFileTcs.SetResult(false); // Сохранение отменено
+                // Если пользователь отменил выбор файла
+                var cancelledTransferFile = new TransferFile
+                {
+                    Error = new Error
+                    {
+                        Code = "CANCELLED",
+                        Message = "File selection was cancelled by the user."
+                    }
+                };
+
+                openFileTcs?.SetResult(cancelledTransferFile);
             }
+        }
+
+        private static string GetFileName(global::Android.Net.Uri uri)
+        {
+            string fileName = null;
+            var cursor = MainActivity.Instance.ContentResolver.Query(uri, null, null, null, null);
+            if (cursor != null && cursor.MoveToFirst())
+            {
+                int nameIndex = cursor.GetColumnIndex(OpenableColumns.DisplayName);
+                if (nameIndex != -1)
+                {
+                    fileName = cursor.GetString(nameIndex);
+                }
+                cursor.Close();
+            }
+            return fileName;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CustomFileOpenerAndSaver.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace CustomFileOpenerAndSaver.Interfaces
 {
     internal interface IFileOpenerService
     {
-        Task OpenFile();
+        Task<TransferFile> OpenFile(TransferFile transferFile);
     }
 }

@@ -34,7 +34,7 @@ namespace CustomFileOpenerAndSaver
 
 
 #if ANDROID
-            var curActivity = Platform.CurrentActivity;
+
 
             _fileSaverService = new FileSaverService();
             _fileOpenerService = new FileOpenerService();
@@ -295,7 +295,11 @@ namespace CustomFileOpenerAndSaver
         {
             try
             {
-                await _fileOpenerService.OpenFile();
+                var transferFile = new TransferFile();
+
+                var getTransferFile = await _fileOpenerService.OpenFile(transferFile);
+
+                int a = 2;
 
                 //var filePickResult = await FilePicker.PickAsync();
 
