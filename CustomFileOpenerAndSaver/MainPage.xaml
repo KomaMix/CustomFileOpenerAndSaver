@@ -3,49 +3,52 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CustomFileOpenerAndSaver.MainPage">
 
-    <VerticalStackLayout Padding="10">
-        <!-- Поля для ввода имени файла и расширения -->
-        <Entry x:Name="FileNameEntry" Placeholder="Введите имя файла" />
-        <Entry x:Name="FileExtensionEntry" Placeholder="Введите расширение файла (.txt, .tdbkp)" />
+    <ScrollView>
+        <VerticalStackLayout Padding="10">
+            <!-- Поля для ввода имени файла и расширения -->
+            <Entry x:Name="FileNameEntry" Placeholder="Введите имя файла" />
+            <Entry x:Name="FileExtensionEntry" Placeholder="Введите расширение файла (.txt, .tdbkp)" />
 
-        <!-- Поле для ввода содержимого файла -->
-        <Editor x:Name="FileContentEditor" Placeholder="Введите содержимое файла" AutoSize="TextChanges" HeightRequest="100"/>
+            <!-- Поле для ввода содержимого файла -->
+            <Editor x:Name="FileContentEditor" Placeholder="Введите содержимое файла" AutoSize="TextChanges" HeightRequest="100"/>
 
-        <!-- Кнопка для создания файла во внутренней памяти -->
-        <Button Text="Создать файл" Clicked="OnCreateFileClicked"/>
+            <!-- Кнопка для создания файла во внутренней памяти -->
+            <Button Text="Создать файл" Clicked="OnCreateFileClicked"/>
 
-        <!-- Кнопка для получения списка файлов из внутренней памяти -->
-        <Button Text="Список файлов" Clicked="OnGetAllFilesClicked"/>
+            <!-- Кнопка для получения списка файлов из внутренней памяти -->
+            <Button Text="Список файлов" Clicked="OnGetAllFilesClicked"/>
 
-        <!-- ListView для отображения файлов -->
-        <ListView x:Name="FilesListView" ItemSelected="OnFileSelected">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextCell Text="{Binding Name}" Detail="{Binding Extension}" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            <!-- ListView для отображения файлов -->
+            <ListView x:Name="FilesListView" ItemSelected="OnFileSelected">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextCell Text="{Binding Name}" Detail="{Binding Extension}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
-        <!-- Кнопка для обновления выбранного файла -->
-        <Button Text="Обновить файл" Clicked="OnOverwriteFileClicked" IsEnabled="False" x:Name="OverwriteFileButton"/>
-        
-        <!-- Кнопка для обновления названия-->
-        <Button Text="Обновить названия файла" Clicked="OnChangeNameFileClicked" IsEnabled="False" x:Name="ChangeNameButton" />
+            <!-- Кнопка для обновления выбранного файла -->
+            <Button Text="Обновить файл" Clicked="OnOverwriteFileClicked" IsEnabled="False" x:Name="OverwriteFileButton"/>
 
-        <!-- Кнопка для удаления выбранного файла -->
-        <Button Text="Удалить файл" Clicked="OnDeleteFileClicked" IsEnabled="False" x:Name="DeleteFileButton"/>
+            <!-- Кнопка для обновления названия-->
+            <Button Text="Обновить названия файла" Clicked="OnChangeNameFileClicked" IsEnabled="False" x:Name="ChangeNameButton" />
 
-        <!-- Кнопка для получения содержимого файла -->
-        <Button Text="Получить содержимое файла" Clicked="OnGetFileContentClicked" IsEnabled="False" x:Name="GetFileContentButton"/>
+            <!-- Кнопка для удаления выбранного файла -->
+            <Button Text="Удалить файл" Clicked="OnDeleteFileClicked" IsEnabled="False" x:Name="DeleteFileButton"/>
 
-        <!-- Новый элемент для отправки файла -->
-        <Button Text="Поделиться файлом" Clicked="OnShareFileClicked" IsEnabled="False" x:Name="ShareFileButton"/>
-        
-        <!-- Кнопка для сохранения файла во внешнюю память-->
-        <Button Text="Сохранить файл во внешнюю память" Clicked="OnSaveFileClicked" IsEnabled="False" x:Name="FileSaveButton" />
-        
-        <!-- Кнопка для открытия файла из внешней памяти-->
-        <Button Text="Открытие файла из внешней памяти" Clicked="OnFileOpenButtonExternalStorage" x:Name="FileOpenButton" />
-    </VerticalStackLayout>
+            <!-- Кнопка для получения содержимого файла -->
+            <Button Text="Получить содержимое файла" Clicked="OnGetFileContentClicked" IsEnabled="False" x:Name="GetFileContentButton"/>
+
+            <!-- Новый элемент для отправки файла -->
+            <Button Text="Поделиться файлом" Clicked="OnShareFileClicked" IsEnabled="False" x:Name="ShareFileButton"/>
+
+            <!-- Кнопка для сохранения файла во внешнюю память-->
+            <Button Text="Сохранить файл во внешнюю память" Clicked="OnSaveFileClicked" IsEnabled="False" x:Name="FileSaveButton" />
+
+            <!-- Кнопка для открытия файла из внешней памяти-->
+            <Button Text="Открытие файла из внешней памяти" Clicked="OnFileOpenButtonExternalStorage" x:Name="FileOpenButton" />
+        </VerticalStackLayout>
+    </ScrollView>
+
 
 </ContentPage>

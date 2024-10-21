@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui.Storage;
-using CustomFileOpenerAndSaver.Interfaces;
+﻿using CustomFileOpenerAndSaver.Interfaces;
 using CustomFileOpenerAndSaver.Models;
 
 #if ANDROID
@@ -11,16 +10,19 @@ using CustomFileOpenerAndSaver.Platforms.Android;
 
 using CustomFileOpenerAndSaver.Services;
 
-using System.Diagnostics;
-using System.Text;
+
 
 namespace CustomFileOpenerAndSaver
 {
     public partial class MainPage : ContentPage
     {
-        // Сервис для работы с внутренней памятью
+        // Сервис для работы с памятью (без диалоговых окон)
         private IInternalFilesManager _fileManagerStorage;
+
+        // Сервис для сохранение файла через диалоговое окно
         private IFileSaverService _fileSaverService;
+
+        // Сервис для открытия файла через диалоговое окно
         private IFileOpenerService _fileOpenerService;
 
         // Текущий выбранный файл в списке
@@ -76,6 +78,7 @@ namespace CustomFileOpenerAndSaver
         // Кнопка получения списка файлов
         private async void OnGetAllFilesClicked(object sender, EventArgs e)
         {
+            // Это специальное разрешение на доступ ко всех файлам во внешней памяти
 //#if ANDROID
 //            CheckPermissionManager.CheckExternalStoragePermission();
 //#endif
@@ -150,8 +153,8 @@ namespace CustomFileOpenerAndSaver
                 if (!_fileManagerStorage.FileExists(fileName, fileExtension))
                 {
 
-                    // Достаем файл из внутреннего хранилища
-                    var internalFileWithContent = await _fileManagerStorage.GetFileContentAsync(_selectedFile);
+                    // Достаем файл из памяти
+                    var fileGetResult = await _fileManagerStorage.GetFileContentAsync(_selectedFile);
 
 
                     // Создаем новый файл
@@ -159,7 +162,7 @@ namespace CustomFileOpenerAndSaver
                     {
                         Name = fileName,
                         Extension = fileExtension,
-                        Content = internalFileWithContent.Content
+                        Content = fileGetResult.Content
                     });
 
 
@@ -168,7 +171,7 @@ namespace CustomFileOpenerAndSaver
                     if (resultCreate.Error == null)
                     {
                         // Удаляем старый файл
-                        resultDelete = _fileManagerStorage.DeleteFile(internalFileWithContent);
+                        resultDelete = _fileManagerStorage.DeleteFile(fileGetResult);
                     }
                     
                     // Вывод успешности операции
@@ -190,7 +193,7 @@ namespace CustomFileOpenerAndSaver
             OnGetAllFilesClicked(sender, e);
         }
 
-        // Удаление файла из внутренней памяти
+        // Удаление файла из памяти
         private async void OnDeleteFileClicked(object sender, EventArgs e)
         {
             if (_selectedFile != null)
@@ -243,12 +246,12 @@ namespace CustomFileOpenerAndSaver
                 try
                 {
                     if (_fileManagerStorage.FileExists(_selectedFile.Name, _selectedFile.Extension)) {
-                        var fullPath = Path.Combine(FileSystem.AppDataDirectory, _selectedFile.Name + _selectedFile.Extension);
+                        var transferFile = await _fileManagerStorage.GetFileContentAsync(_selectedFile);
 
                         await Share.RequestAsync(new ShareFileRequest
                         {
                             Title = "Отправить файл",
-                            File = new ShareFile(fullPath)
+                            File = new ShareFile(transferFile.Path)
                         });
                     } else
                     {
@@ -263,7 +266,7 @@ namespace CustomFileOpenerAndSaver
         }
 
 
-        // Сохранения файла из внутренней памяти во внешнюю память
+        // Сохранения выбранного файла (через диалоговое окно)
         private async void OnSaveFileClicked(object sender, EventArgs e)
         {
             try
@@ -275,7 +278,7 @@ namespace CustomFileOpenerAndSaver
                     var bytes = Convert.FromBase64String(resultFile.Content);
 
                     // Вызов платформенного сервиса для сохранения файла
-                    await _fileSaverService.SaveFileAsync($"{_selectedFile.Name}{_selectedFile.Extension}", bytes);
+                    var saveFile = await _fileSaverService.SaveFileAsync(_selectedFile);
 
                     await DisplayAlert("", "Файл сохранен", "OK");
 
@@ -290,7 +293,7 @@ namespace CustomFileOpenerAndSaver
 
 
 
-        // Открытие файла из внешнего хранилища
+        // Открытие файла (через диалоговое окно)
         private async void OnFileOpenButtonExternalStorage(object sender, EventArgs e)
         {
             try
@@ -299,21 +302,17 @@ namespace CustomFileOpenerAndSaver
 
                 var getTransferFile = await _fileOpenerService.OpenFile(transferFile);
 
-                int a = 2;
 
-                //var filePickResult = await FilePicker.PickAsync();
+                if (getTransferFile.Error == null)
+                {
 
-                //if (filePickResult != null)
-                //{
+                    await DisplayAlert("", "Файл успешно открыт", "OK");
 
-                //    await DisplayAlert("", "Файл успешно открыт", "OK");
+                } else
+                {
+                    await DisplayAlert("", "Не удалось открыть файл", "OK");
+                }
 
-                //} else
-                //{
-                //    await DisplayAlert("", "Не удалось открыть файл", "OK");
-                //}
-
-                //string fileContent = await OpenFileFromMediaStore("Hg.tdbkp", "Ridan");
 
             } catch
             {

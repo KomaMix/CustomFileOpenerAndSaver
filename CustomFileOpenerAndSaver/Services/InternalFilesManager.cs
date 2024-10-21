@@ -14,8 +14,16 @@ namespace CustomFileOpenerAndSaver.Services
 
         public InternalFilesManager()
         {
+            // Тут идет сохранение во внешнюю память. Но она внешняя не в том смысле, что без проблем можем получать доступ
+            // Внешняя в том смысле, что она доступна пользователю
+            // При этом файлы, созданными разными приложениями будут знать, какое приложение их создало
+
+            // Тут можно также указать на внутреннюю папку приложения
 #if ANDROID
-            // Получаем путь к Documents
+            // Можно так же указать в внутренней памяти приложения. Все будет работать
+            //var internalRoot = Android.App.Application.Context.FilesDir?.AbsolutePath;
+
+            // Получаем путь к Documents (внешняя память)
             var externalRoot = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments)?.AbsolutePath;
 
             // Создаем путь к папке Ridan внутри папки Downloads
@@ -31,6 +39,7 @@ namespace CustomFileOpenerAndSaver.Services
 #endif
         }
 
+        // Создание нового файла
         public async Task<TransferFile> CreateFileAsync(TransferFile file)
         {
             if (FileExists(file.Name, file.Extension))
@@ -75,6 +84,7 @@ namespace CustomFileOpenerAndSaver.Services
             }
         }
 
+        //
         public async Task<TransferFile> GetFileContentAsync(TransferFile file)
         {
             if (!FileExists(file.Name, file.Extension))
@@ -113,6 +123,12 @@ namespace CustomFileOpenerAndSaver.Services
 
         public List<TransferFile> GetAllFileNames()
         {
+#if ANDROID
+            // Проверка доступа ко всей внешней памяти
+            // Проверяет наличие разрешения MANAGE_EXTERNAL_STORAGE
+            Platforms.Android.CheckPermissionManager.CheckExternalStoragePermission();
+#endif
+
             var files = Directory.GetFiles(_storagePath);
             var transferFiles = new List<TransferFile>();
 
@@ -207,7 +223,7 @@ namespace CustomFileOpenerAndSaver.Services
             await File.WriteAllBytesAsync(fullPath, contentBytes);
         }
 
-        private string GetFullPath(string fileName, string extension)
+        public string GetFullPath(string fileName, string extension)
         {
             var fileExtension = extension.StartsWith(".") ? extension : "." + extension;
             return Path.Combine(_storagePath, fileName + fileExtension);

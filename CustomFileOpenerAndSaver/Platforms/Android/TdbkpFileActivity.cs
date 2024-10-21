@@ -16,6 +16,12 @@ namespace CustomFileOpenerAndSaver.Platforms.Android
     DataScheme = "content",
     DataHost = "*",
     DataPathPattern = ".*\\.tdbkp")]
+    [IntentFilter(new[] { Intent.ActionView },
+    Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
+    DataMimeType = "application/octet-stream",
+    DataScheme = "file",
+    DataHost = "*",
+    DataPathPattern = ".*\\.tdbkp")]
 
     // Класс для обработки файла с расширением .tdbkp, переданного из других приложений
     public class TdbkpFileActivity : Activity
