@@ -10,18 +10,16 @@ namespace CustomFileOpenerAndSaver.Platforms.Android
 {
 
     [Activity(Theme = "@style/Maui.SplashTheme", LaunchMode = LaunchMode.Multiple, Exported = true)]
-    [IntentFilter(new[] { Intent.ActionView },
-    Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
-    DataMimeType = "application/octet-stream",
-    DataScheme = "content",
-    DataHost = "*",
-    DataPathPattern = ".*\\.tdbkp")]
-    [IntentFilter(new[] { Intent.ActionView },
-    Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
-    DataMimeType = "application/octet-stream",
-    DataScheme = "file",
-    DataHost = "*",
-    DataPathPattern = ".*\\.tdbkp")]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
+        DataMimeType = "application/octet-stream", DataScheme = "file", DataHost = "*", DataPathPattern = ".*\\..*\\\\.tdbkp")]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
+    DataMimeType = "application/octet-stream", DataScheme = "content", DataHost = "*", DataPathPattern = ".*\\.tdbkp")]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
+    DataMimeType = "application/octet-stream", DataScheme = "content", DataHost = "*", DataPathPattern = ".*\\..*\\.tdbkp")]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
+    DataMimeType = "application/octet-stream", DataScheme = "content", DataHost = "*", DataPathPattern = ".*\\..*\\..*\\.tdbkp")]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
+    DataMimeType = "application/octet-stream", DataScheme = "content", DataHost = "*", DataPathPattern = ".*\\..*\\..*\\..*\\.tdbkp")]
 
     // Класс для обработки файла с расширением .tdbkp, переданного из других приложений
     public class TdbkpFileActivity : Activity

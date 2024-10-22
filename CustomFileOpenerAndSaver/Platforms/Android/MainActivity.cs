@@ -28,6 +28,27 @@ namespace CustomFileOpenerAndSaver
             {
                 FileOpenerService.OnOpenFileActivityResult(resultCode, data);
             }
+
+            if (requestCode == 1002 && resultCode == Result.Ok && data != null)
+            {
+                Android.Net.Uri treeUri = data.Data;
+
+                // Сохранение разрешения для долгосрочного доступа
+                ContentResolver.TakePersistableUriPermission(treeUri, ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
+
+                // Сохранение URI в Preferences для последующего использования
+                Preferences.Set("SelectedDirectoryUri", treeUri.ToString());
+
+                // Оповещение страницы об изменениях
+                MessagingCenter.Send(this, "DirectorySelected", treeUri.ToString());
+            }
+        }
+
+        public void RequestDirectoryAccess()
+        {
+            var intent = new Intent(Intent.ActionOpenDocumentTree);
+            intent.AddFlags(ActivityFlags.GrantPersistableUriPermission | ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
+            StartActivityForResult(intent, 1002);
         }
     }
 }

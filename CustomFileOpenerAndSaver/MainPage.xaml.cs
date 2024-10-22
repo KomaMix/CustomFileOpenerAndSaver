@@ -1,6 +1,7 @@
 ﻿using CustomFileOpenerAndSaver.Interfaces;
 using CustomFileOpenerAndSaver.Models;
 
+
 #if ANDROID
 
 using CustomFileOpenerAndSaver.Platforms.Android.Services;
@@ -25,6 +26,11 @@ namespace CustomFileOpenerAndSaver
         // Сервис для открытия файла через диалоговое окно
         private IFileOpenerService _fileOpenerService;
 
+
+#if ANDROID
+        private AllFilesService _allFilesService;
+#endif
+
         // Текущий выбранный файл в списке
         // Пока сделал так. Думаю, в будущем это можно изменить по Blazor
         private TransferFile _selectedFile;
@@ -40,6 +46,7 @@ namespace CustomFileOpenerAndSaver
 
             _fileSaverService = new FileSaverService();
             _fileOpenerService = new FileOpenerService();
+            _allFilesService = new AllFilesService();
 #endif
         }
 
@@ -318,6 +325,25 @@ namespace CustomFileOpenerAndSaver
             {
                 throw;
             }
+        }
+
+        private void OnPickDirectoryClicked(object sender, EventArgs e)
+        {
+            // Вызов SAF для выбора директории
+#if ANDROID
+            MainActivity.Instance.RequestDirectoryAccess();
+#endif
+        }
+
+        private void LoadFilesFromSelectedDirectory(object sender, EventArgs e)
+        {
+#if ANDROID
+            // Получение файлов через сервис
+            var files = _allFilesService.GetFilesInSelectedDirectory();
+
+            // Обновление ListView
+            FilesListWithUri.ItemsSource = files;
+#endif
         }
 
 

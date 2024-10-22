@@ -26,6 +26,7 @@ namespace CustomFileOpenerAndSaver.Services
             // Получаем путь к Documents (внешняя память)
             var externalRoot = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments)?.AbsolutePath;
 
+
             // Создаем путь к папке Ridan внутри папки Downloads
             var _externalStoragePath = Path.Combine(externalRoot, "Ridan");
 
@@ -123,11 +124,11 @@ namespace CustomFileOpenerAndSaver.Services
 
         public List<TransferFile> GetAllFileNames()
         {
-#if ANDROID
-            // Проверка доступа ко всей внешней памяти
-            // Проверяет наличие разрешения MANAGE_EXTERNAL_STORAGE
-            Platforms.Android.CheckPermissionManager.CheckExternalStoragePermission();
-#endif
+//#if ANDROID
+//            // Проверка доступа ко всей внешней памяти
+//            // Проверяет наличие разрешения MANAGE_EXTERNAL_STORAGE
+//            Platforms.Android.CheckPermissionManager.CheckExternalStoragePermission();
+//#endif
 
             var files = Directory.GetFiles(_storagePath);
             var transferFiles = new List<TransferFile>();
